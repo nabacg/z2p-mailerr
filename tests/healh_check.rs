@@ -1,14 +1,13 @@
-use std::{net::TcpListener, error::Error};
-
+use std::{error::Error, net::TcpListener};
 
 // `cargo expand --test health_check`
 #[tokio::test]
 async fn health_check_succeeds() {
-    // start web server 
+    // start web server
     let local_addrs = spawn_app().expect("failed to spawn App");
 
     let client = reqwest::Client::new();
-    let response =  client
+    let response = client
         .get(format!("{}/health_check", local_addrs))
         .send()
         .await
@@ -21,10 +20,8 @@ async fn health_check_succeeds() {
 fn spawn_app() -> Result<String, Box<dyn Error>> {
     let listener = TcpListener::bind("127.0.0.1:0")?;
 
-
     let socket_addr = listener.local_addr().map_err(|e| e.into());
     tokio::spawn(z2p_mailerr::run(listener)?);
 
-    
     socket_addr.map(|p| format!("http://127.0.0.1:{}", p.port()))
 }
