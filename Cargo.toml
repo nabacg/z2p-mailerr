@@ -1,4 +1,4 @@
-[package]
+[package] 
 name = "z2p-mailerr"
 version = "0.1.0"
 edition = "2021"
@@ -13,6 +13,7 @@ name = "z2p-mailerr"
 
 [dependencies]
 actix-web = "4"
+serde = { version = "1.0.163", features = ["derive"]}
 tokio = {version = "1", features = ["macros", "rt-multi-thread"]}
 
 [dev-dependencies]
