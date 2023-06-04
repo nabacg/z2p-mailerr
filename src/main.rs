@@ -1,6 +1,6 @@
 use std::net::TcpListener;
 
-use sqlx::{Connection, PgConnection, PgPool};
+use sqlx::PgPool;
 use z2p_mailerr::{configuration, startup::run};
 
 #[tokio::main]

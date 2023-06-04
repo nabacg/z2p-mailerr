@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-cargo watch -x fmt -x check -x test
+cargo watch -x check -x test -x fmt -x clippy
