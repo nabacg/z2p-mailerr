@@ -1,33 +1,5 @@
-use std::{error::Error, net::TcpListener};
-
-use sqlx::{Connection, PgConnection, PgPool};
-use z2p_mailerr::configuration::{self, get_configuration};
-
-pub struct TestApp {
-    pub address: String,
-    pub db_pool: PgPool,
-}
-
-async fn spawn_app() -> TestApp {
-    let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind to random port!");
-
-    let socket_addr = listener.local_addr().expect("Failed to get local_addrs");
-
-    let config_settings = configuration::get_configuration().expect("Failed to read configuration");
-    let connection_url = config_settings.database.connection_string();
-
-    let connection = PgPool::connect(&connection_url)
-        .await
-        .expect("Failed to create DB connection pool");
-    tokio::spawn(
-        z2p_mailerr::startup::run(listener, connection.clone()).expect("failed to run App"),
-    );
-    TestApp {
-        db_pool: connection,
-        address: format!("http://127.0.0.1:{}", socket_addr.port()),
-    }
-}
-
+mod test_app;
+use test_app::spawn_app;
 // `cargo expand --test health_check`
 #[tokio::test]
 async fn health_check_succeeds() {
@@ -49,11 +21,6 @@ async fn health_check_succeeds() {
 async fn subscribe_returns_200_for_a_valid_form_data() {
     // start web server
     let app = spawn_app().await;
-
-    let saved_sub = sqlx::query!("delete from public.subscriptions",)
-        .execute(&app.db_pool)
-        .await
-        .expect("failed to delete all subscriptions");
 
     let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
 
