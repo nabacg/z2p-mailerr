@@ -1,5 +1,6 @@
 use std::net::TcpListener;
 
+use secrecy::ExposeSecret;
 use sqlx::PgPool;
 
 use z2p_mailerr::{
@@ -15,7 +16,7 @@ async fn main() -> std::io::Result<()> {
     let config_settings =
         configuration::get_configuration().expect("failed to read configuration!");
     let connection_url = config_settings.database.connection_string();
-    let connection_pool = PgPool::connect(&connection_url)
+    let connection_pool = PgPool::connect(&connection_url.expose_secret())
         .await
         .expect("failed to connect to Database!");
 

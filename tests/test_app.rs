@@ -1,4 +1,5 @@
 use once_cell::sync::Lazy;
+use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::net::TcpListener;
 use uuid::Uuid;
@@ -52,7 +53,7 @@ pub async fn spawn_app() -> TestApp {
 
 async fn setup_db(cfg: &DatabaseSettings) -> PgPool {
     let connection_url = cfg.connection_string_without_db();
-    let mut connection = PgConnection::connect(&connection_url)
+    let mut connection = PgConnection::connect(&connection_url.expose_secret())
         .await
         .expect("Failed to Connect to postgres to create DB;");
     connection
@@ -61,7 +62,7 @@ async fn setup_db(cfg: &DatabaseSettings) -> PgPool {
         .expect("Failed to create test Database!");
 
     let connection_url = cfg.connection_string();
-    let connection_pool = PgPool::connect(&connection_url)
+    let connection_pool = PgPool::connect(&connection_url.expose_secret())
         .await
         .expect("Failed to create DB connection pool");
 
