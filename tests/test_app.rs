@@ -1,7 +1,26 @@
+use once_cell::sync::Lazy;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::net::TcpListener;
 use uuid::Uuid;
-use z2p_mailerr::configuration::{self, DatabaseSettings};
+use z2p_mailerr::{
+    configuration::{self, DatabaseSettings},
+    telemetry::{get_tracing_subscriber, init_tracing},
+};
+
+static TRACING: Lazy<()> = Lazy::new(|| {
+    let name = "z2p_mailerr".into();
+    let env_filter = "info".into();
+
+    if std::env::var("TEST_LOG").is_ok() {
+        let subscriber = get_tracing_subscriber(name, env_filter, std::io::stdout);
+
+        init_tracing(subscriber);
+    } else {
+        let subscriber = get_tracing_subscriber(name, env_filter, std::io::sink);
+
+        init_tracing(subscriber);
+    }
+});
 
 pub struct TestApp {
     pub address: String,
@@ -9,6 +28,9 @@ pub struct TestApp {
 }
 
 pub async fn spawn_app() -> TestApp {
+    // force tracing init, the first time spawn_app is called and never again!
+    Lazy::force(&TRACING);
+
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind to random port!");
 
     let socket_addr = listener.local_addr().expect("Failed to get local_addrs");
