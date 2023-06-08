@@ -48,6 +48,11 @@ jobs:
 
       - name: Migrate database
         run: SKIP_DOCKER=true ./scripts/init_db.sh
+
+# check if offline sqlx meta json is up to date        
+      - name: Check sqlx-data.json is up-to-date
+        run: |
+          cargo sqlx prepare --check -- --bin z2p_mailerr
   
 
       - name: Run tests
