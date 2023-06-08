@@ -47,7 +47,11 @@ pub async fn spawn_app() -> TestApp {
     );
     TestApp {
         db_pool: connection_pool,
-        address: format!("http://127.0.0.1:{}", socket_addr.port()),
+        address: format!(
+            "http://{}:{}",
+            config_settings.application.host,
+            socket_addr.port()
+        ),
     }
 }
 
