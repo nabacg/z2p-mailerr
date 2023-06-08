@@ -52,7 +52,7 @@ jobs:
 # check if offline sqlx meta json is up to date        
       - name: Check sqlx-data.json is up-to-date
         run: |
-          cargo sqlx prepare --check -- --bin z2p_mailerr
+          cargo sqlx prepare --check -- --bin z2p-mailerr
   
 
       - name: Run tests
