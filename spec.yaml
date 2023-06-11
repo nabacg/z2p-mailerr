@@ -1,0 +1,54 @@
+name: z2p-mailerr
+region: lon1
+databases:
+    # pre-built DB? nice!
+  - engine: PG # PG=postgres
+    # database name 
+    name: newsletter
+    num_nodes: 1
+    size: db-s-dev-database
+    # Postgres version
+    version: "12"
+    
+services:
+  - name: z2p-mailerr
+    # path relative to repo root
+    dockerfile_path: Dockerfile
+    source_dir: .
+    github:
+      branch: main
+      # deploy new version on every commit to `main`!!
+      deploy_on_push: true
+      repo: nabacg/z2p-mailerr
+
+    health_check:
+      http_path: /health_check
+
+    # setup Env Var overrides 
+    envs:
+      # configuration::Settings.database.username etc
+      - key: APP_DATABASE__USERNAME
+        scope: RUN_TIME
+        value: ${newsletter.USERNAME}
+      - key: APP_DATABASE__PASSWORD
+        scope: RUN_TIME
+        value: ${newsletter.PASSWORD}
+      - key: APP_DATABASE__HOST
+        scope: RUN_TIME
+        value: ${newsletter.HOSTNAME}
+      - key: APP_DATABASE__PORT
+        scope: RUN_TIME
+        value: ${newsletter.PORT}
+      - key: APP_DATABASE__DATABASE_NAME
+        scope: RUN_TIME
+        value: ${newsletter.DATABASE}
+    #port service will listen on, should match configuration/production.yaml
+    http_port: 8080
+
+    # how many instances and size
+    instance_count: 1
+    instance_size_slug: basic-xxs
+
+    #all incoming requests should be routed to z2p-mailerr
+    routes:
+      - path: /
