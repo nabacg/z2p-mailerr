@@ -1,4 +1,5 @@
 use secrecy::{ExposeSecret, Secret};
+use serde_aux::prelude::deserialize_number_from_string;
 
 #[derive(serde::Deserialize)]
 pub struct Settings {
@@ -9,6 +10,8 @@ pub struct Settings {
 #[derive(serde::Deserialize)]
 pub struct ApplicationSettings {
     pub host: String,
+    #[serde(deserialize_with = "deserialize_number_from_string")]
+    // to handle the fact that EnvVar are strings and would fail to deserialize into u16
     pub port: u16,
 }
 
@@ -17,6 +20,7 @@ pub struct DatabaseSettings {
     pub user: String,
     pub password: Secret<String>,
     pub database_name: String,
+    #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub host: String,
 }
@@ -58,6 +62,13 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let config = config::Config::builder()
         .add_source(config::File::from(config_dir.join("base.yaml")))
         .add_source(config::File::from(config_dir.join(env_filename)))
+        // Env var settings override, with prefix `APP` and `__` as separator
+        // so APP_APPLICATION_PORT will override Settings.application.port field
+        .add_source(
+            config::Environment::with_prefix("APP")
+                .prefix_separator("_")
+                .separator("__"),
+        )
         .build()?;
 
     // deserialize Config -> Settings
