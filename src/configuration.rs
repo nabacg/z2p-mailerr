@@ -21,7 +21,7 @@ pub struct ApplicationSettings {
 
 #[derive(serde::Deserialize)]
 pub struct DatabaseSettings {
-    pub user: String,
+    pub username: String,
     pub password: Secret<String>,
     pub database_name: String,
     #[serde(deserialize_with = "deserialize_number_from_string")]
@@ -49,7 +49,7 @@ impl DatabaseSettings {
         PgConnectOptions::new()
             .host(&self.host)
             .port(self.port)
-            .username(&self.user)
+            .username(&self.username)
             .password(self.password.expose_secret())
             .ssl_mode(ssl_mode)
     }
@@ -70,7 +70,7 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
         .add_source(config::File::from(config_dir.join("base.yaml")))
         .add_source(config::File::from(config_dir.join(env_filename)))
         // Env var settings override, with prefix `APP` and `__` as separator
-        // so APP_APPLICATION_PORT will override Settings.application.port field
+        // so APP_APPLICATION__PORT will override Settings.application.port field
         .add_source(
             config::Environment::with_prefix("APP")
                 .prefix_separator("_")
